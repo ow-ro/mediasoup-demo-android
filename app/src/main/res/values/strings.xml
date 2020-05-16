@@ -11,6 +11,13 @@
     <string name="video_producer_copied">Copy video producer id to clipboard</string>
     <string name="video_consumer_copied">Copy video consumer id to clipboard</string>
 
+    <!-- Permission Dialog -->
+    <string name="button_allow">Allow</string>
+    <string name="button_deny">Deny</string>
+    <string name="permission_rationale">Camera permission and Record audio permission, Write external storage permission is needed.</string>
+    <string name="permission_denied">Permission was denied. Please consider granting it in order to access the camera and mic, storage!</string>
+    <string name="permission_never_ask_again">Permission was denied with never ask again.</string>
+
     <!-- Preference Titles -->
     <string name="room_header">Room</string>
     <string name="device_header">Device</string>

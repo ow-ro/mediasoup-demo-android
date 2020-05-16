@@ -50,7 +50,9 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    implementation 'com.nabinbhandari.android:permissions:3.8'
+    implementation 'org.permissionsdispatcher:permissionsdispatcher:4.7.0'
+    annotationProcessor 'org.permissionsdispatcher:permissionsdispatcher-processor:4.7.0'
+
     implementation 'org.protoojs.droid:protoo-client:4.0.3'
     implementation 'org.mediasoup.droid:mediasoup-client:3.0.8-beta-1'
 

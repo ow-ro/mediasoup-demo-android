@@ -13,15 +13,15 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
-import com.nabinbhandari.android.permissions.PermissionHandler;
-import com.nabinbhandari.android.permissions.Permissions;
 
 import org.mediasoup.droid.MediasoupClient;
 import org.mediasoup.droid.demo.adapter.PeerAdapter;
@@ -39,11 +39,18 @@ import org.mediasoup.droid.lib.model.Peer;
 
 import java.util.List;
 
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 import timber.log.Timber;
 
 import static org.mediasoup.droid.demo.utils.ClipboardCopy.clipboardCopy;
 import static org.mediasoup.droid.lib.Utils.getRandomString;
 
+@RuntimePermissions
 public class RoomActivity extends AppCompatActivity {
 
   private static final String TAG = RoomActivity.class.getSimpleName();
@@ -64,10 +71,9 @@ public class RoomActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     mBinding = DataBindingUtil.setContentView(this, R.layout.activity_room);
     createRoom();
-    checkPermission();
   }
 
-  private void createRoom() {
+  void createRoom() {
     mOptions = new RoomOptions();
     loadRoomConfig();
 
@@ -76,6 +82,59 @@ public class RoomActivity extends AppCompatActivity {
 
     getViewModelStore().clear();
     initViewModel();
+
+    RoomActivityPermissionsDispatcher.joinRoomWithPermissionCheck(this);
+  }
+
+  @NeedsPermission({
+          Manifest.permission.RECORD_AUDIO,
+          Manifest.permission.CAMERA,
+          Manifest.permission.WRITE_EXTERNAL_STORAGE })
+  void joinRoom() {
+    Timber.d("permission granted");
+    if (mRoomClient != null) {
+      mRoomClient.join();
+    }
+  }
+
+  @OnShowRationale({
+          Manifest.permission.RECORD_AUDIO,
+          Manifest.permission.CAMERA,
+          Manifest.permission.WRITE_EXTERNAL_STORAGE })
+  void showRationale(PermissionRequest request) {
+    showRationaleDialog(R.string.permission_rationale, request);
+  }
+
+  @OnPermissionDenied({
+          Manifest.permission.RECORD_AUDIO,
+          Manifest.permission.CAMERA,
+          Manifest.permission.WRITE_EXTERNAL_STORAGE })
+  void onPermissionDenied() {
+    Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_SHORT).show();
+  }
+
+  @OnNeverAskAgain({
+          Manifest.permission.RECORD_AUDIO,
+          Manifest.permission.CAMERA,
+          Manifest.permission.WRITE_EXTERNAL_STORAGE })
+  void onNeverAskAgain() {
+    Toast.makeText(this, R.string.permission_never_ask_again, Toast.LENGTH_SHORT).show();
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    // NOTE: delegate the permission handling to generated function
+    RoomActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+  }
+
+  private void showRationaleDialog(@StringRes int messageResId, PermissionRequest request) {
+    new AlertDialog.Builder(this)
+            .setPositiveButton(R.string.button_allow, (dialog, which) -> request.proceed())
+            .setNegativeButton(R.string.button_deny, (dialog, which) -> request.cancel())
+            .setCancelable(false)
+            .setMessage(messageResId)
+            .show();
   }
 
   private void loadRoomConfig() {
@@ -199,30 +258,6 @@ public class RoomActivity extends AppCompatActivity {
     mRoomStore.getNotify().observe(this, notifyObserver);
   }
 
-  private PermissionHandler permissionHandler =
-      new PermissionHandler() {
-        @Override
-        public void onGranted() {
-          Timber.d("permission granted");
-          if (mRoomClient != null) {
-            mRoomClient.join();
-          }
-        }
-      };
-
-  private void checkPermission() {
-    String[] permissions = {
-      Manifest.permission.INTERNET,
-      Manifest.permission.RECORD_AUDIO,
-      Manifest.permission.CAMERA,
-      Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
-    String rationale = "Please provide permissions";
-    Permissions.Options options =
-        new Permissions.Options().setRationaleDialogTitle("Info").setSettingsDialogTitle("Warning");
-    Permissions.check(this, permissions, rationale, options, permissionHandler);
-  }
-
   private void destroyRoom() {
     if (mRoomClient != null) {
       mRoomClient.close();
@@ -259,8 +294,6 @@ public class RoomActivity extends AppCompatActivity {
       destroyRoom();
       // local config and reCreate room related.
       createRoom();
-      // check permission again. if granted, join room.
-      checkPermission();
     } else {
       super.onActivityResult(requestCode, resultCode, data);
     }
