@@ -2,11 +2,9 @@ package org.mediasoup.droid.lib;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.MainThread;
 
-import org.mediasoup.droid.Logger;
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
 import org.webrtc.Camera1Enumerator;
@@ -26,6 +24,8 @@ import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 import org.webrtc.audio.AudioDeviceModule;
 import org.webrtc.audio.JavaAudioDeviceModule;
+
+import timber.log.Timber;
 
 @SuppressWarnings("WeakerAccess")
 public class PeerConnectionUtils {
@@ -56,7 +56,7 @@ public class PeerConnectionUtils {
 
   // PeerConnection factory creation.
   private void createPeerConnectionFactory(Context context) {
-    Logger.d(TAG, "createPeerConnectionFactory()");
+    Timber.d("createPeerConnectionFactory()");
     mThreadChecker.checkIsOnValidThread();
     PeerConnectionFactory.Builder builder = PeerConnectionFactory.builder();
     builder.setOptions(null);
@@ -77,7 +77,7 @@ public class PeerConnectionUtils {
   }
 
   private AudioDeviceModule createJavaAudioDevice(Context appContext) {
-    Logger.d(TAG, "createJavaAudioDevice()");
+    Timber.d("createJavaAudioDevice()");
     mThreadChecker.checkIsOnValidThread();
     // Enable/disable OpenSL ES playback.
     // Set audio record error callbacks.
@@ -85,18 +85,18 @@ public class PeerConnectionUtils {
         new JavaAudioDeviceModule.AudioRecordErrorCallback() {
           @Override
           public void onWebRtcAudioRecordInitError(String errorMessage) {
-            Logger.e(TAG, "onWebRtcAudioRecordInitError: " + errorMessage);
+              Timber.e("onWebRtcAudioRecordInitError: %s", errorMessage);
           }
 
           @Override
           public void onWebRtcAudioRecordStartError(
               JavaAudioDeviceModule.AudioRecordStartErrorCode errorCode, String errorMessage) {
-            Logger.e(TAG, "onWebRtcAudioRecordStartError: " + errorCode + ". " + errorMessage);
+              Timber.e("onWebRtcAudioRecordStartError: %s. %s", errorCode, errorMessage);
           }
 
           @Override
           public void onWebRtcAudioRecordError(String errorMessage) {
-            Logger.e(TAG, "onWebRtcAudioRecordError: " + errorMessage);
+              Timber.e("onWebRtcAudioRecordError: %s", errorMessage);
           }
         };
 
@@ -104,18 +104,18 @@ public class PeerConnectionUtils {
         new JavaAudioDeviceModule.AudioTrackErrorCallback() {
           @Override
           public void onWebRtcAudioTrackInitError(String errorMessage) {
-            Log.e(TAG, "onWebRtcAudioTrackInitError: " + errorMessage);
+              Timber.e("onWebRtcAudioTrackInitError: %s", errorMessage);
           }
 
           @Override
           public void onWebRtcAudioTrackStartError(
               JavaAudioDeviceModule.AudioTrackStartErrorCode errorCode, String errorMessage) {
-            Log.e(TAG, "onWebRtcAudioTrackStartError: " + errorCode + ". " + errorMessage);
+              Timber.e("onWebRtcAudioTrackStartError: %s. %s", errorCode, errorMessage);
           }
 
           @Override
           public void onWebRtcAudioTrackError(String errorMessage) {
-            Log.e(TAG, "onWebRtcAudioTrackError: " + errorMessage);
+              Timber.e("onWebRtcAudioTrackError: %s", errorMessage);
           }
         };
 
@@ -127,7 +127,7 @@ public class PeerConnectionUtils {
 
   // Audio source creation.
   private void createAudioSource(Context context) {
-    Logger.d(TAG, "createAudioSource()");
+    Timber.d("createAudioSource()");
     mThreadChecker.checkIsOnValidThread();
     if (mPeerConnectionFactory == null) {
       createPeerConnectionFactory(context);
@@ -137,7 +137,7 @@ public class PeerConnectionUtils {
   }
 
   private void createCamCapture(Context context) {
-    Logger.d(TAG, "createCamCapture()");
+    Timber.d("createCamCapture()");
     mThreadChecker.checkIsOnValidThread();
     boolean isCamera2Supported = Camera2Enumerator.isSupported(context);
     CameraEnumerator cameraEnumerator;
@@ -168,32 +168,32 @@ public class PeerConnectionUtils {
                 new CameraVideoCapturer.CameraEventsHandler() {
                   @Override
                   public void onCameraError(String s) {
-                    Logger.e(TAG, "onCameraError, " + s);
+                    Timber.e("onCameraError, %s", s);
                   }
 
                   @Override
                   public void onCameraDisconnected() {
-                    Logger.w(TAG, "onCameraDisconnected");
+                      Timber.w("onCameraDisconnected");
                   }
 
                   @Override
                   public void onCameraFreezed(String s) {
-                    Logger.w(TAG, "onCameraFreezed, " + s);
+                      Timber.w("onCameraFreezed, %s", s);
                   }
 
                   @Override
                   public void onCameraOpening(String s) {
-                    Logger.d(TAG, "onCameraOpening, " + s);
+                      Timber.d("onCameraOpening, %s", s);
                   }
 
                   @Override
                   public void onFirstFrameAvailable() {
-                    Logger.d(TAG, "onFirstFrameAvailable");
+                      Timber.d("onFirstFrameAvailable");
                   }
 
                   @Override
                   public void onCameraClosed() {
-                    Logger.d(TAG, "onCameraClosed");
+                      Timber.d("onCameraClosed");
                   }
                 });
         break;
@@ -206,7 +206,7 @@ public class PeerConnectionUtils {
   }
 
   public void switchCam(CameraVideoCapturer.CameraSwitchHandler switchHandler) {
-    Logger.d(TAG, "switchCam()");
+    Timber.d("switchCam()");
     mThreadChecker.checkIsOnValidThread();
     if (mCamCapture != null) {
       mCamCapture.switchCamera(switchHandler);
@@ -216,7 +216,7 @@ public class PeerConnectionUtils {
   // Video source creation.
   @MainThread
   private void createVideoSource(Context context) {
-    Logger.d(TAG, "createVideoSource()");
+    Timber.d("createVideoSource()");
     mThreadChecker.checkIsOnValidThread();
     if (mPeerConnectionFactory == null) {
       createPeerConnectionFactory(context);
@@ -235,7 +235,7 @@ public class PeerConnectionUtils {
 
   // Audio track creation.
   public AudioTrack createAudioTrack(Context context, String id) {
-    Logger.d(TAG, "createAudioTrack()");
+    Timber.d("createAudioTrack()");
     mThreadChecker.checkIsOnValidThread();
     if (mAudioSource == null) {
       createAudioSource(context);
@@ -245,7 +245,7 @@ public class PeerConnectionUtils {
 
   // Video track creation.
   public VideoTrack createVideoTrack(Context context, String id) {
-    Logger.d(TAG, "createVideoTrack()");
+    Timber.d("createVideoTrack()");
     mThreadChecker.checkIsOnValidThread();
     if (mVideoSource == null) {
       createVideoSource(context);
@@ -255,7 +255,7 @@ public class PeerConnectionUtils {
   }
 
   public void dispose() {
-    Logger.w(TAG, "dispose()");
+    Timber.w("dispose()");
     mThreadChecker.checkIsOnValidThread();
     if (mCamCapture != null) {
       mCamCapture.dispose();

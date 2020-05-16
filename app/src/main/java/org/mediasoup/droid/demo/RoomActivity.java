@@ -23,7 +23,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.nabinbhandari.android.permissions.PermissionHandler;
 import com.nabinbhandari.android.permissions.Permissions;
 
-import org.mediasoup.droid.Logger;
 import org.mediasoup.droid.MediasoupClient;
 import org.mediasoup.droid.demo.adapter.PeerAdapter;
 import org.mediasoup.droid.demo.databinding.ActivityRoomBinding;
@@ -39,6 +38,8 @@ import org.mediasoup.droid.lib.model.Notify;
 import org.mediasoup.droid.lib.model.Peer;
 
 import java.util.List;
+
+import timber.log.Timber;
 
 import static org.mediasoup.droid.demo.utils.ClipboardCopy.clipboardCopy;
 import static org.mediasoup.droid.lib.Utils.getRandomString;
@@ -202,7 +203,7 @@ public class RoomActivity extends AppCompatActivity {
       new PermissionHandler() {
         @Override
         public void onGranted() {
-          Logger.d(TAG, "permission granted");
+          Timber.d("permission granted");
           if (mRoomClient != null) {
             mRoomClient.join();
           }
@@ -253,7 +254,7 @@ public class RoomActivity extends AppCompatActivity {
   @Override
   protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
     if (requestCode == REQUEST_CODE_SETTING) {
-      Logger.d(TAG, "request config done");
+      Timber.d("request config done");
       // close, dispose room related and clear store.
       destroyRoom();
       // local config and reCreate room related.

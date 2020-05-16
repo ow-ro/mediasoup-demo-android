@@ -7,12 +7,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mediasoup.droid.Consumer;
-import org.mediasoup.droid.Logger;
 import org.mediasoup.droid.lib.lv.RoomStore;
 import org.protoojs.droid.Message;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import timber.log.Timber;
 
 class RoomMessageHandler {
 
@@ -142,7 +143,7 @@ class RoomMessageHandler {
         }
       default:
         {
-          Logger.e(TAG, "unknown protoo notification.method " + notification.getMethod());
+          Timber.e("unknown protoo notification.method %s", notification.getMethod());
         }
     }
   }

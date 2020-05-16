@@ -10,7 +10,6 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 
 import org.mediasoup.droid.Consumer;
-import org.mediasoup.droid.Logger;
 import org.mediasoup.droid.lib.lv.RoomStore;
 import org.mediasoup.droid.lib.model.Consumers;
 import org.mediasoup.droid.lib.model.Peer;
@@ -19,6 +18,8 @@ import org.webrtc.AudioTrack;
 import org.webrtc.VideoTrack;
 
 import java.util.Set;
+
+import timber.log.Timber;
 
 public class PeerProps extends PeerViewProps {
 
@@ -96,12 +97,7 @@ public class PeerProps extends PeerViewProps {
     private Observer<Peers> mPeersObservable =
         peers -> {
           mPeer = peers.getPeer(mPeerId);
-          Logger.w(
-              TAG,
-              "onChanged() id: "
-                  + mPeerId
-                  + ", name:"
-                  + (mPeer != null ? mPeer.getDisplayName() : ""));
+          Timber.w("onChanged() id: %s, name: %s", mPeerId, mPeer != null ? mPeer.getDisplayName() : "");
           // TODO(HaiyangWu): check whether need notify change.
           notifyChange();
         };

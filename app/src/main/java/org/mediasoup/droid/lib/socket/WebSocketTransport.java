@@ -6,7 +6,6 @@ import android.os.HandlerThread;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-import org.mediasoup.droid.Logger;
 import org.protoojs.droid.Message;
 import org.protoojs.droid.transports.AbsWebSocketTransport;
 
@@ -25,6 +24,7 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.ByteString;
+import timber.log.Timber;
 
 import static org.apache.http.conn.ssl.SSLSocketFactory.SSL;
 
@@ -94,7 +94,7 @@ public class WebSocketTransport extends AbsWebSocketTransport {
 
   @Override
   public void connect(Listener listener) {
-    Logger.d(TAG, "connect()");
+    Timber.d("connect()");
     mListener = listener;
     mHandler.post(this::newWebSocket);
   }
@@ -111,13 +111,13 @@ public class WebSocketTransport extends AbsWebSocketTransport {
     if (reconnectInterval == -1) {
       return false;
     }
-    Logger.d(TAG, "scheduleReconnect() ");
+    Timber.d("scheduleReconnect() ");
     mHandler.postDelayed(
         () -> {
           if (mClosed) {
             return;
           }
-          Logger.w(TAG, "doing reconnect job, retryCount: " + mRetryStrategy.retryCount);
+          Timber.w("doing reconnect job, retryCount: %d", mRetryStrategy.retryCount);
           mOkHttpClient.dispatcher().cancelAll();
           newWebSocket();
           mRetryStrategy.retried();
@@ -150,7 +150,7 @@ public class WebSocketTransport extends AbsWebSocketTransport {
       return;
     }
     mClosed = true;
-    Logger.d(TAG, "close()");
+    Timber.d("close()");
     final CountDownLatch countDownLatch = new CountDownLatch(1);
     mHandler.post(
         () -> {
@@ -179,7 +179,7 @@ public class WebSocketTransport extends AbsWebSocketTransport {
       if (mClosed) {
         return;
       }
-      Logger.d(TAG, "onOpen() ");
+      Timber.d("onOpen() ");
       mWebSocket = webSocket;
       mConnected = true;
       if (mListener != null) {
@@ -190,7 +190,7 @@ public class WebSocketTransport extends AbsWebSocketTransport {
 
     @Override
     public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
-      Logger.w(TAG, "onClosed()");
+      Timber.w("onClosed()");
       if (mClosed) {
         return;
       }
@@ -204,13 +204,13 @@ public class WebSocketTransport extends AbsWebSocketTransport {
 
     @Override
     public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
-      Logger.w(TAG, "onClosing()");
+      Timber.w( "onClosing()");
     }
 
     @Override
     public void onFailure(
         @NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
-      Logger.w(TAG, "onFailure()");
+      Timber.w("onFailure()");
       if (mClosed) {
         return;
       }
@@ -223,7 +223,7 @@ public class WebSocketTransport extends AbsWebSocketTransport {
           }
         }
       } else {
-        Logger.e(TAG, "give up reconnect. notify closed");
+        Timber.e("give up reconnect. notify closed");
         mClosed = true;
         if (mListener != null) {
           mListener.onClose();
@@ -234,7 +234,7 @@ public class WebSocketTransport extends AbsWebSocketTransport {
 
     @Override
     public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
-      Logger.d(TAG, "onMessage()");
+      Timber.d("onMessage()");
       if (mClosed) {
         return;
       }
@@ -249,7 +249,7 @@ public class WebSocketTransport extends AbsWebSocketTransport {
 
     @Override
     public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
-      Logger.d(TAG, "onMessage()");
+      Timber.d("onMessage()");
     }
   }
 
@@ -286,7 +286,7 @@ public class WebSocketTransport extends AbsWebSocketTransport {
       final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
       HttpLoggingInterceptor httpLoggingInterceptor =
-          new HttpLoggingInterceptor(s -> Logger.d(TAG, s));
+          new HttpLoggingInterceptor(s -> Timber.d(s));
       httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
 
       OkHttpClient.Builder builder =

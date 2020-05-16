@@ -4,11 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import org.json.JSONObject;
-import org.mediasoup.droid.Logger;
 import org.mediasoup.droid.lib.socket.WebSocketTransport;
 import org.protoojs.droid.ProtooException;
 
 import io.reactivex.rxjava3.core.Observable;
+import timber.log.Timber;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class Protoo extends org.protoojs.droid.Peer {
@@ -34,7 +34,7 @@ public class Protoo extends org.protoojs.droid.Peer {
   }
 
   private Observable<String> request(String method, @NonNull JSONObject data) {
-    Logger.d(TAG, "request(), method: " + method);
+    Timber.d("request(), method: %s", method);
     return Observable.create(
         emitter ->
             request(
@@ -72,7 +72,7 @@ public class Protoo extends org.protoojs.droid.Peer {
 
   @WorkerThread
   private String syncRequest(String method, @NonNull JSONObject data) throws ProtooException {
-    Logger.d(TAG, "syncRequest(), method: " + method);
+    Timber.d("syncRequest(), method: %s", method);
 
     try {
       return request(method, data).blockingFirst();

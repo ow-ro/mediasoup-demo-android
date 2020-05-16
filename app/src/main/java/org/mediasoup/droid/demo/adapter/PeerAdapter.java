@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.mediasoup.droid.Logger;
 import org.mediasoup.droid.demo.R;
 import org.mediasoup.droid.demo.view.PeerView;
 import org.mediasoup.droid.demo.vm.PeerProps;
@@ -20,6 +19,8 @@ import org.mediasoup.droid.lib.model.Peer;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import timber.log.Timber;
 
 public class PeerAdapter extends RecyclerView.Adapter<PeerAdapter.PeerViewHolder> {
 
@@ -95,7 +96,7 @@ public class PeerAdapter extends RecyclerView.Adapter<PeerAdapter.PeerViewHolder
     }
 
     void bind(LifecycleOwner owner, RoomClient roomClient, @NonNull Peer peer) {
-      Logger.d(TAG, "bind() id: " + peer.getId() + ", name: " + peer.getDisplayName());
+      Timber.d("bind() id: %s, name: %s", peer.getId(), peer.getDisplayName());
       mPeerProps.connect(owner, peer.getId());
       mPeerView.setProps(mPeerProps, roomClient);
     }

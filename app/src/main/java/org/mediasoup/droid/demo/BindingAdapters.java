@@ -15,6 +15,8 @@ import org.mediasoup.droid.lib.model.DeviceInfo;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoTrack;
 
+import timber.log.Timber;
+
 public class BindingAdapters {
 
   private static final String TAG = "BindingAdapters";
@@ -70,7 +72,7 @@ public class BindingAdapters {
   @BindingAdapter({"edias_restart_ice_progress", "edias_restart_ice_ani"})
   public static void restartIce(
       ImageView view, boolean restart_ice_in_progress, Animation animation) {
-    Log.d(TAG, "restartIce() " + restart_ice_in_progress);
+    Timber.d("restartIce() %b", restart_ice_in_progress);
     view.setEnabled(!restart_ice_in_progress);
     if (restart_ice_in_progress) {
       view.startAnimation(animation);
@@ -120,7 +122,7 @@ public class BindingAdapters {
     if (state == null) {
       return;
     }
-    Log.d(TAG, "edias_mic_state: " + state.name());
+    Timber.d("edias_mic_state: %s", state.name());
     if (MeProps.DeviceState.ON.equals(state)) {
       imageView.setBackgroundResource(R.drawable.bg_media_box_on);
     } else {
@@ -145,7 +147,7 @@ public class BindingAdapters {
     if (state == null) {
       return;
     }
-    Log.d(TAG, "edias_cam_state: " + state.name());
+    Timber.d("edias_cam_state: %s", state.name());
     if (MeProps.DeviceState.ON.equals(state)) {
       imageView.setBackgroundResource(R.drawable.bg_media_box_on);
     } else {
@@ -170,7 +172,7 @@ public class BindingAdapters {
     if (state == null) {
       return;
     }
-    Log.d(TAG, "edias_change_came_state: " + state.name());
+    Timber.d("edias_change_came_state: %s", state.name());
     if (MeProps.DeviceState.ON.equals(state)) {
       view.setEnabled(true);
     } else {
@@ -183,7 +185,7 @@ public class BindingAdapters {
     if (state == null) {
       return;
     }
-    Log.d(TAG, "edias_share_state: " + state.name());
+    Timber.d("edias_share_state: %s", state.name());
     if (MeProps.DeviceState.ON.equals(state)) {
       view.setEnabled(true);
     } else {
@@ -193,7 +195,7 @@ public class BindingAdapters {
 
   @BindingAdapter({"edias_render"})
   public static void render(SurfaceViewRenderer renderer, VideoTrack track) {
-    Log.d(TAG, "edias_render: " + (track != null));
+    Timber.d("edias_render: %b", track != null);
     if (track != null) {
       track.addSink(renderer);
       renderer.setVisibility(View.VISIBLE);
@@ -204,7 +206,7 @@ public class BindingAdapters {
 
   @BindingAdapter({"edias_render_empty"})
   public static void renderEmpty(View renderer, VideoTrack track) {
-    Log.d(TAG, "edias_render_empty: " + (track != null));
+    Timber.d("edias_render_empty: %b", track != null);
     if (track == null) {
       renderer.setVisibility(View.VISIBLE);
     } else {

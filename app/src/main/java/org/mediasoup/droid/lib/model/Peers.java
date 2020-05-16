@@ -4,13 +4,14 @@ import androidx.annotation.NonNull;
 
 import org.json.JSONObject;
 import org.mediasoup.droid.Consumer;
-import org.mediasoup.droid.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import timber.log.Timber;
 
 public class Peers {
 
@@ -33,7 +34,7 @@ public class Peers {
   public void setPeerDisplayName(String peerId, String displayName) {
     Peer peer = mPeersInfo.get(peerId);
     if (peer == null) {
-      Logger.e(TAG, "no Protoo found");
+      Timber.e("no Protoo found");
       return;
     }
     peer.setDisplayName(displayName);
@@ -42,7 +43,7 @@ public class Peers {
   public void addConsumer(String peerId, Consumer consumer) {
     Peer peer = getPeer(peerId);
     if (peer == null) {
-      Logger.e(TAG, "no Peer found for new Consumer");
+      Timber.e("no Peer found for new Consumer");
       return;
     }
 

@@ -16,7 +16,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.mediasoup.droid.Consumer;
 import org.mediasoup.droid.Device;
-import org.mediasoup.droid.Logger;
 import org.mediasoup.droid.MediasoupException;
 import org.mediasoup.droid.Producer;
 import org.mediasoup.droid.RecvTransport;
@@ -31,6 +30,7 @@ import org.webrtc.CameraVideoCapturer;
 import org.webrtc.VideoTrack;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import timber.log.Timber;
 
 import static org.mediasoup.droid.lib.JsonUtils.jsonPut;
 import static org.mediasoup.droid.lib.JsonUtils.toJsonObject;
@@ -138,7 +138,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void join() {
-    Logger.d(TAG, "join() " + this.mProtooUrl);
+    Timber.d("join() %s", this.mProtooUrl);
     mStore.setRoomState(ConnectionState.CONNECTING);
     mWorkHandler.post(
         () -> {
@@ -149,31 +149,31 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void enableMic() {
-    Logger.d(TAG, "enableMic()");
+    Timber.d("enableMic()");
     mWorkHandler.post(this::enableMicImpl);
   }
 
   @Async
   public void disableMic() {
-    Logger.d(TAG, "disableMic()");
+    Timber.d("disableMic()");
     mWorkHandler.post(this::disableMicImpl);
   }
 
   @Async
   public void muteMic() {
-    Logger.d(TAG, "muteMic()");
+    Timber.d("muteMic()");
     mWorkHandler.post(this::muteMicImpl);
   }
 
   @Async
   public void unmuteMic() {
-    Logger.d(TAG, "unmuteMic()");
+    Timber.d("unmuteMic()");
     mWorkHandler.post(this::unmuteMicImpl);
   }
 
   @Async
   public void enableCam() {
-    Logger.d(TAG, "enableCam()");
+    Timber.d("enableCam()");
     mStore.setCamInProgress(true);
     mWorkHandler.post(
         () -> {
@@ -184,13 +184,13 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void disableCam() {
-    Logger.d(TAG, "disableCam()");
+    Timber.d("disableCam()");
     mWorkHandler.post(this::disableCamImpl);
   }
 
   @Async
   public void changeCam() {
-    Logger.d(TAG, "changeCam()");
+    Timber.d("changeCam()");
     mStore.setCamInProgress(true);
     mWorkHandler.post(
         () ->
@@ -203,7 +203,7 @@ public class RoomClient extends RoomMessageHandler {
 
                   @Override
                   public void onCameraSwitchError(String s) {
-                    Logger.w(TAG, "changeCam() | failed: " + s);
+                    Timber.w("changeCam() | failed: %s", s);
                     mStore.addNotify("error", "Could not change cam: " + s);
                     mStore.setCamInProgress(false);
                   }
@@ -212,19 +212,19 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void disableShare() {
-    Logger.d(TAG, "disableShare()");
+    Timber.d("disableShare()");
     // TODO(feature): share
   }
 
   @Async
   public void enableShare() {
-    Logger.d(TAG, "enableShare()");
+    Timber.d("enableShare()");
     // TODO(feature): share
   }
 
   @Async
   public void enableAudioOnly() {
-    Logger.d(TAG, "enableAudioOnly()");
+    Timber.d("enableAudioOnly()");
     mStore.setAudioOnlyInProgress(true);
 
     disableCam();
@@ -243,7 +243,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void disableAudioOnly() {
-    Logger.d(TAG, "disableAudioOnly()");
+    Timber.d("disableAudioOnly()");
     mStore.setAudioOnlyInProgress(true);
 
     if (mCamProducer == null && mOptions.isProduce()) {
@@ -264,7 +264,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void muteAudio() {
-    Logger.d(TAG, "muteAudio()");
+    Timber.d("muteAudio()");
     mStore.setAudioMutedState(true);
     mWorkHandler.post(
         () -> {
@@ -279,7 +279,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void unmuteAudio() {
-    Logger.d(TAG, "unmuteAudio()");
+    Timber.d("unmuteAudio()");
     mStore.setAudioMutedState(false);
     mWorkHandler.post(
         () -> {
@@ -294,7 +294,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void restartIce() {
-    Logger.d(TAG, "restartIce()");
+    Timber.d("restartIce()");
     mStore.setRestartIceInProgress(true);
     mWorkHandler.post(
         () -> {
@@ -322,26 +322,26 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void setMaxSendingSpatialLayer() {
-    Logger.d(TAG, "setMaxSendingSpatialLayer()");
+    Timber.d("setMaxSendingSpatialLayer()");
     // TODO(feature): layer
   }
 
   @Async
   public void setConsumerPreferredLayers(String spatialLayer) {
-    Logger.d(TAG, "setConsumerPreferredLayers()");
+    Timber.d("setConsumerPreferredLayers()");
     // TODO(feature): layer
   }
 
   @Async
   public void setConsumerPreferredLayers(
       String consumerId, String spatialLayer, String temporalLayer) {
-    Logger.d(TAG, "setConsumerPreferredLayers()");
+    Timber.d("setConsumerPreferredLayers()");
     // TODO: layer
   }
 
   @Async
   public void requestConsumerKeyFrame(String consumerId) {
-    Logger.d(TAG, "requestConsumerKeyFrame()");
+    Timber.d("requestConsumerKeyFrame()");
     mWorkHandler.post(
         () -> {
           try {
@@ -358,31 +358,31 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void enableChatDataProducer() {
-    Logger.d(TAG, "enableChatDataProducer()");
+    Timber.d("enableChatDataProducer()");
     // TODO(feature): data channel
   }
 
   @Async
   public void enableBotDataProducer() {
-    Logger.d(TAG, "enableBotDataProducer()");
+    Timber.d("enableBotDataProducer()");
     // TODO(feature): data channel
   }
 
   @Async
   public void sendChatMessage(String txt) {
-    Logger.d(TAG, "sendChatMessage()");
+    Timber.d("sendChatMessage()");
     // TODO(feature): data channel
   }
 
   @Async
   public void sendBotMessage(String txt) {
-    Logger.d(TAG, "sendBotMessage()");
+    Timber.d("sendBotMessage()");
     // TODO(feature): data channel
   }
 
   @Async
   public void changeDisplayName(String displayName) {
-    Logger.d(TAG, "changeDisplayName()");
+    Timber.d("changeDisplayName()");
 
     // Store in cookie.
     mPreferences.edit().putString("displayName", displayName).apply();
@@ -409,91 +409,91 @@ public class RoomClient extends RoomMessageHandler {
 
   @Async
   public void getSendTransportRemoteStats() {
-    Logger.d(TAG, "getSendTransportRemoteStats()");
+    Timber.d("getSendTransportRemoteStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getRecvTransportRemoteStats() {
-    Logger.d(TAG, "getRecvTransportRemoteStats()");
+    Timber.d("getRecvTransportRemoteStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getAudioRemoteStats() {
-    Logger.d(TAG, "getAudioRemoteStats()");
+    Timber.d("getAudioRemoteStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getVideoRemoteStats() {
-    Logger.d(TAG, "getVideoRemoteStats()");
+    Timber.d("getVideoRemoteStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getConsumerRemoteStats(String consumerId) {
-    Logger.d(TAG, "getConsumerRemoteStats()");
+    Timber.d("getConsumerRemoteStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getChatDataProducerRemoteStats(String consumerId) {
-    Logger.d(TAG, "getChatDataProducerRemoteStats()");
+    Timber.d("getChatDataProducerRemoteStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getBotDataProducerRemoteStats() {
-    Logger.d(TAG, "getBotDataProducerRemoteStats()");
+    Timber.d("getBotDataProducerRemoteStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getDataConsumerRemoteStats(String dataConsumerId) {
-    Logger.d(TAG, "getDataConsumerRemoteStats()");
+    Timber.d("getDataConsumerRemoteStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getSendTransportLocalStats() {
-    Logger.d(TAG, "getSendTransportLocalStats()");
+    Timber.d("getSendTransportLocalStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getRecvTransportLocalStats() {
-    Logger.d(TAG, "getRecvTransportLocalStats()");
+    Timber.d("getRecvTransportLocalStats()");
     /// TODO(feature): stats
   }
 
   @Async
   public void getAudioLocalStats() {
-    Logger.d(TAG, "getAudioLocalStats()");
+    Timber.d("getAudioLocalStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getVideoLocalStats() {
-    Logger.d(TAG, "getVideoLocalStats()");
+    Timber.d("getVideoLocalStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void getConsumerLocalStats(String consumerId) {
-    Logger.d(TAG, "getConsumerLocalStats()");
+    Timber.d("getConsumerLocalStats()");
     // TODO(feature): stats
   }
 
   @Async
   public void applyNetworkThrottle(String uplink, String downlink, String rtt, String secret) {
-    Logger.d(TAG, "applyNetworkThrottle()");
+    Timber.d("applyNetworkThrottle()");
     // TODO(feature): stats
   }
 
   @Async
   public void resetNetworkThrottle(boolean silent, String secret) {
-    Logger.d(TAG, "applyNetworkThrottle()");
+    Timber.d("applyNetworkThrottle()");
     // TODO(feature): stats
   }
 
@@ -503,7 +503,7 @@ public class RoomClient extends RoomMessageHandler {
       return;
     }
     this.mClosed = true;
-    Logger.d(TAG, "close()");
+    Timber.d("close()");
 
     mWorkHandler.post(
         () -> {
@@ -546,7 +546,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void disposeTransportDevice() {
-    Logger.d(TAG, "disposeTransportDevice()");
+    Timber.d("disposeTransportDevice()");
     // Close mediasoup Transports.
     if (mSendTransport != null) {
       mSendTransport.close();
@@ -586,7 +586,7 @@ public class RoomClient extends RoomMessageHandler {
         @Override
         public void onRequest(
             @NonNull Message.Request request, @NonNull Protoo.ServerRequestHandler handler) {
-          Logger.d(TAG, "onRequest() " + request.getData().toString());
+          Timber.d("onRequest() " + request.getData().toString());
           mWorkHandler.post(
               () -> {
                 try {
@@ -604,29 +604,24 @@ public class RoomClient extends RoomMessageHandler {
                     default:
                       {
                         handler.reject(403, "unknown protoo request.method " + request.getMethod());
-                        Logger.w(TAG, "unknown protoo request.method " + request.getMethod());
+                        Timber.w("unknown protoo request.method %s", request.getMethod());
                       }
                   }
                 } catch (Exception e) {
-                  Logger.e(TAG, "handleRequestError.", e);
+                  Timber.e(e, "handleRequestError.");
                 }
               });
         }
 
         @Override
         public void onNotification(@NonNull Message.Notification notification) {
-          Logger.d(
-              TAG,
-              "onNotification() "
-                  + notification.getMethod()
-                  + ", "
-                  + notification.getData().toString());
+          Timber.d("onNotification() %s, %s", notification.getMethod(), notification.getData().toString());
           mWorkHandler.post(
               () -> {
                 try {
                   handleNotification(notification);
                 } catch (Exception e) {
-                  Logger.e(TAG, "handleNotification error.", e);
+                  Timber.e(e, "handleNotification error.");
                 }
               });
         }
@@ -661,7 +656,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void joinImpl() {
-    Logger.d(TAG, "joinImpl()");
+    Timber.d("joinImpl()");
 
     try {
       mMediasoupDevice = new Device();
@@ -724,21 +719,21 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void enableMicImpl() {
-    Logger.d(TAG, "enableMicImpl()");
+    Timber.d("enableMicImpl()");
     try {
       if (mMicProducer != null) {
         return;
       }
       if (!mMediasoupDevice.isLoaded()) {
-        Logger.w(TAG, "enableMic() | not loaded");
+        Timber.w("enableMic() | not loaded");
         return;
       }
       if (!mMediasoupDevice.canProduce("audio")) {
-        Logger.w(TAG, "enableMic() | cannot produce audio");
+        Timber.w("enableMic() | cannot produce audio");
         return;
       }
       if (mSendTransport == null) {
-        Logger.w(TAG, "enableMic() | mSendTransport doesn't ready");
+        Timber.w("enableMic() | mSendTransport doesn't ready");
         return;
       }
       if (mLocalAudioTrack == null) {
@@ -748,7 +743,7 @@ public class RoomClient extends RoomMessageHandler {
       mMicProducer =
           mSendTransport.produce(
               producer -> {
-                Logger.e(TAG, "onTransportClose(), micProducer");
+                Timber.e("onTransportClose(), micProducer");
                 if (mMicProducer != null) {
                   mStore.removeProducer(mMicProducer.getId());
                   mMicProducer = null;
@@ -759,7 +754,6 @@ public class RoomClient extends RoomMessageHandler {
               null);
       mStore.addProducer(mMicProducer);
     } catch (MediasoupException e) {
-      e.printStackTrace();
       logError("enableMic() | failed:", e);
       mStore.addNotify("error", "Error enabling microphone: " + e.getMessage());
       if (mLocalAudioTrack != null) {
@@ -770,7 +764,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void disableMicImpl() {
-    Logger.d(TAG, "disableMicImpl()");
+    Timber.d("disableMicImpl()");
     if (mMicProducer == null) {
       return;
     }
@@ -781,7 +775,6 @@ public class RoomClient extends RoomMessageHandler {
     try {
       mProtoo.syncRequest("closeProducer", req -> jsonPut(req, "producerId", mMicProducer.getId()));
     } catch (ProtooException e) {
-      e.printStackTrace();
       mStore.addNotify("error", "Error closing server-side mic Producer: " + e.getMessage());
     }
     mMicProducer = null;
@@ -789,14 +782,13 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void muteMicImpl() {
-    Logger.d(TAG, "muteMicImpl()");
+    Timber.d("muteMicImpl()");
     mMicProducer.pause();
 
     try {
       mProtoo.syncRequest("pauseProducer", req -> jsonPut(req, "producerId", mMicProducer.getId()));
       mStore.setProducerPaused(mMicProducer.getId());
     } catch (ProtooException e) {
-      e.printStackTrace();
       logError("muteMic() | failed:", e);
       mStore.addNotify("error", "Error pausing server-side mic Producer: " + e.getMessage());
     }
@@ -804,7 +796,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void unmuteMicImpl() {
-    Logger.d(TAG, "unmuteMicImpl()");
+    Timber.d("unmuteMicImpl()");
     mMicProducer.resume();
 
     try {
@@ -812,7 +804,6 @@ public class RoomClient extends RoomMessageHandler {
           "resumeProducer", req -> jsonPut(req, "producerId", mMicProducer.getId()));
       mStore.setProducerResumed(mMicProducer.getId());
     } catch (ProtooException e) {
-      e.printStackTrace();
       logError("unmuteMic() | failed:", e);
       mStore.addNotify("error", "Error resuming server-side mic Producer: " + e.getMessage());
     }
@@ -820,21 +811,21 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void enableCamImpl() {
-    Logger.d(TAG, "enableCamImpl()");
+    Timber.d("enableCamImpl()");
     try {
       if (mCamProducer != null) {
         return;
       }
       if (!mMediasoupDevice.isLoaded()) {
-        Logger.w(TAG, "enableCam() | not loaded");
+        Timber.w("enableCam() | not loaded");
         return;
       }
       if (!mMediasoupDevice.canProduce("video")) {
-        Logger.w(TAG, "enableCam() | cannot produce video");
+        Timber.w("enableCam() | cannot produce video");
         return;
       }
       if (mSendTransport == null) {
-        Logger.w(TAG, "enableCam() | mSendTransport doesn't ready");
+        Timber.w("enableCam() | mSendTransport doesn't ready");
         return;
       }
 
@@ -845,7 +836,7 @@ public class RoomClient extends RoomMessageHandler {
       mCamProducer =
           mSendTransport.produce(
               producer -> {
-                Logger.e(TAG, "onTransportClose(), camProducer");
+                Timber.e("onTransportClose(), camProducer");
                 if (mCamProducer != null) {
                   mStore.removeProducer(mCamProducer.getId());
                   mCamProducer = null;
@@ -856,7 +847,6 @@ public class RoomClient extends RoomMessageHandler {
               null);
       mStore.addProducer(mCamProducer);
     } catch (MediasoupException e) {
-      e.printStackTrace();
       logError("enableWebcam() | failed:", e);
       mStore.addNotify("error", "Error enabling webcam: " + e.getMessage());
       if (mLocalVideoTrack != null) {
@@ -867,7 +857,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void disableCamImpl() {
-    Logger.d(TAG, "disableCamImpl()");
+    Timber.d("disableCamImpl()");
     if (mCamProducer == null) {
       return;
     }
@@ -877,7 +867,6 @@ public class RoomClient extends RoomMessageHandler {
     try {
       mProtoo.syncRequest("closeProducer", req -> jsonPut(req, "producerId", mCamProducer.getId()));
     } catch (ProtooException e) {
-      e.printStackTrace();
       mStore.addNotify("error", "Error closing server-side webcam Producer: " + e.getMessage());
     }
     mCamProducer = null;
@@ -885,7 +874,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void createSendTransport() throws ProtooException, JSONException, MediasoupException {
-    Logger.d(TAG, "createSendTransport()");
+    Timber.d("createSendTransport()");
     String res =
         mProtoo.syncRequest(
             "createWebRtcTransport",
@@ -898,7 +887,7 @@ public class RoomClient extends RoomMessageHandler {
             }));
     JSONObject info = new JSONObject(res);
 
-    Logger.d(TAG, "device#createSendTransport() " + info);
+    Timber.d("device#createSendTransport() " + info);
     String id = info.optString("id");
     String iceParameters = info.optString("iceParameters");
     String iceCandidates = info.optString("iceCandidates");
@@ -912,7 +901,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void createRecvTransport() throws ProtooException, JSONException, MediasoupException {
-    Logger.d(TAG, "createRecvTransport()");
+    Timber.d("createRecvTransport()");
 
     String res =
         mProtoo.syncRequest(
@@ -925,7 +914,7 @@ public class RoomClient extends RoomMessageHandler {
               jsonPut(req, "sctpCapabilities", "");
             });
     JSONObject info = new JSONObject(res);
-    Logger.d(TAG, "device#createRecvTransport() " + info);
+    Timber.d("device#createRecvTransport() " + info);
     String id = info.optString("id");
     String iceParameters = info.optString("iceParameters");
     String iceCandidates = info.optString("iceCandidates");
@@ -948,7 +937,7 @@ public class RoomClient extends RoomMessageHandler {
           if (mClosed) {
             return "";
           }
-          Logger.d(listenerTAG, "onProduce() ");
+          Timber.tag(listenerTAG).d("onProduce() ");
           String producerId =
               fetchProduceId(
                   req -> {
@@ -957,7 +946,7 @@ public class RoomClient extends RoomMessageHandler {
                     jsonPut(req, "rtpParameters", toJsonObject(rtpParameters));
                     jsonPut(req, "appData", appData);
                   });
-          Logger.d(listenerTAG, "producerId: " + producerId);
+          Timber.tag(listenerTAG).d("producerId: %s", producerId);
           return producerId;
         }
 
@@ -966,7 +955,7 @@ public class RoomClient extends RoomMessageHandler {
           if (mClosed) {
             return;
           }
-          Logger.d(listenerTAG + "_send", "onConnect()");
+          Timber.tag(listenerTAG + "_send").d("onConnect()");
           mCompositeDisposable.add(
               mProtoo
                   .request(
@@ -976,13 +965,13 @@ public class RoomClient extends RoomMessageHandler {
                         jsonPut(req, "dtlsParameters", toJsonObject(dtlsParameters));
                       })
                   .subscribe(
-                      d -> Logger.d(listenerTAG, "connectWebRtcTransport res: " + d),
+                      d -> Timber.tag(listenerTAG).d("connectWebRtcTransport res: %s", d),
                       t -> logError("connectWebRtcTransport for mSendTransport failed", t)));
         }
 
         @Override
         public void onConnectionStateChange(Transport transport, String connectionState) {
-          Logger.d(listenerTAG, "onConnectionStateChange: " + connectionState);
+          Timber.tag(listenerTAG).d("onConnectionStateChange: %s", connectionState);
         }
       };
 
@@ -996,7 +985,7 @@ public class RoomClient extends RoomMessageHandler {
           if (mClosed) {
             return;
           }
-          Logger.d(listenerTAG, "onConnect()");
+          Timber.tag(listenerTAG).d("onConnect()");
           mCompositeDisposable.add(
               mProtoo
                   .request(
@@ -1006,30 +995,29 @@ public class RoomClient extends RoomMessageHandler {
                         jsonPut(req, "dtlsParameters", toJsonObject(dtlsParameters));
                       })
                   .subscribe(
-                      d -> Logger.d(listenerTAG, "connectWebRtcTransport res: " + d),
+                      d -> Timber.tag(listenerTAG).d("connectWebRtcTransport res: %s", d),
                       t -> logError("connectWebRtcTransport for mRecvTransport failed", t)));
         }
 
         @Override
         public void onConnectionStateChange(Transport transport, String connectionState) {
-          Logger.d(listenerTAG, "onConnectionStateChange: " + connectionState);
+          Timber.tag(listenerTAG).d("onConnectionStateChange: %s", connectionState);
         }
       };
 
   private String fetchProduceId(Protoo.RequestGenerator generator) {
-    Logger.d(TAG, "fetchProduceId:()");
+    Timber.d("fetchProduceId:()");
     try {
       String response = mProtoo.syncRequest("produce", generator);
       return new JSONObject(response).optString("id");
     } catch (ProtooException | JSONException e) {
-      e.printStackTrace();
       logError("send produce request failed", e);
       return "";
     }
   }
 
   private void logError(String message, Throwable throwable) {
-    Logger.e(TAG, message, throwable);
+    Timber.e(throwable, message);
   }
 
   private void onNewConsumer(Message.Request request, Protoo.ServerRequestHandler handler) {
@@ -1052,7 +1040,7 @@ public class RoomClient extends RoomMessageHandler {
           mRecvTransport.consume(
               c -> {
                 mConsumers.remove(c.getId());
-                Logger.w(TAG, "onTransportClose for consume");
+                Timber.w("onTransportClose for consume");
               },
               id,
               producerId,
@@ -1085,7 +1073,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void pauseConsumer(Consumer consumer) {
-    Logger.d(TAG, "pauseConsumer() " + consumer.getId());
+    Timber.d("pauseConsumer() " + consumer.getId());
     if (consumer.isPaused()) {
       return;
     }
@@ -1103,7 +1091,7 @@ public class RoomClient extends RoomMessageHandler {
 
   @WorkerThread
   private void resumeConsumer(Consumer consumer) {
-    Logger.d(TAG, "resumeConsumer() " + consumer.getId());
+    Timber.d("resumeConsumer() " + consumer.getId());
     if (!consumer.isPaused()) {
       return;
     }
