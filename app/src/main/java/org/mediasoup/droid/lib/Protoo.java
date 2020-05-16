@@ -8,7 +8,7 @@ import org.mediasoup.droid.Logger;
 import org.mediasoup.droid.lib.socket.WebSocketTransport;
 import org.protoojs.droid.ProtooException;
 
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Observable;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class Protoo extends org.protoojs.droid.Peer {
