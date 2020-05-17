@@ -20,6 +20,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
+import io.github.zncmn.webrtc.camera.CameraCapturerFactory
+import io.github.zncmn.webrtc.option.MediaConstraintsOption
 import kotlinx.android.synthetic.main.activity_room.*
 import org.mediasoup.droid.MediasoupClient
 import org.mediasoup.droid.demo.adapter.PeerAdapter
@@ -33,6 +35,7 @@ import org.mediasoup.droid.lib.RoomClient
 import org.mediasoup.droid.lib.RoomOptions
 import org.mediasoup.droid.lib.Utils
 import org.mediasoup.droid.lib.lv.RoomStore
+import org.webrtc.EglBase
 import permissions.dispatcher.*
 import timber.log.Timber
 
@@ -45,6 +48,7 @@ class RoomActivity : AppCompatActivity() {
     private var displayName: String? = null
     private var forceH264 = false
     private var forceVP9 = false
+    private var cameraName = ""
     private lateinit var options: RoomOptions
     private lateinit var roomStore: RoomStore
     private var roomClient: RoomClient? = null
@@ -149,8 +153,7 @@ class RoomActivity : AppCompatActivity() {
         options.isForceTcp = preferences.getBoolean("forceTcp", false)
 
         // Device config.
-        val camera = preferences.getString("camera", "front")
-        PeerConnectionUtils.setPreferCameraFace(camera)
+        cameraName = preferences.getString("camera", "front") ?: ""
 
         // Display version number.
         version.text = MediasoupClient.version().toString()
@@ -166,7 +169,29 @@ class RoomActivity : AppCompatActivity() {
             return
         }
 
-        roomClient = RoomClient(this, roomStore, roomId, peerId, displayName, forceH264, forceVP9, options)
+        val camCapturer = CameraCapturerFactory.create(this,
+            fixedResolution = false,
+            preferenceFrontCamera = "front" == cameraName
+        )
+        roomClient = RoomClient(
+            context = this,
+            store = roomStore,
+            roomId = roomId,
+            peerId = peerId,
+            displayName = displayName,
+            forceH264 = forceH264,
+            forceVP9 = forceVP9,
+            options = options,
+            camCapturer = camCapturer,
+            mediaConstraintsOption = MediaConstraintsOption().also {
+                it.enableAudioDownstream()
+                it.enableAudioUpstream()
+                it.enableVideoDownstream(PeerConnectionUtils.eglContext)
+                camCapturer?.also { capturer ->
+                    it.enableVideoUpstream(capturer, PeerConnectionUtils.eglContext)
+                }
+            }
+        )
     }
 
     private fun initViewModel() {

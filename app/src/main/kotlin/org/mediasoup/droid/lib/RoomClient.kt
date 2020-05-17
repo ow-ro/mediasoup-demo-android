@@ -5,6 +5,8 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import androidx.annotation.WorkerThread
+import io.github.zncmn.webrtc.RTCComponentFactory
+import io.github.zncmn.webrtc.option.MediaConstraintsOption
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.kotlin.subscribeBy
@@ -19,9 +21,9 @@ import org.protoojs.droid.Message
 import org.protoojs.droid.Peer
 import org.protoojs.droid.Peer.ServerRequestHandler
 import org.protoojs.droid.ProtooException
-import org.webrtc.AudioTrack
 import org.webrtc.CameraVideoCapturer.CameraSwitchHandler
-import org.webrtc.VideoTrack
+import org.webrtc.PeerConnectionFactory
+import org.webrtc.VideoCapturer
 import timber.log.Timber
 
 class RoomClient(context: Context,
@@ -31,7 +33,9 @@ class RoomClient(context: Context,
                  private var displayName: String,
                  forceH264: Boolean = false,
                  forceVP9: Boolean = false,
-                 private val options: RoomOptions = RoomOptions()
+                 private val camCapturer: VideoCapturer?,
+                 private val options: RoomOptions = RoomOptions(),
+                 private val mediaConstraintsOption: MediaConstraintsOption
 ) : RoomMessageHandler(store) {
     enum class ConnectionState {
         // initial state.
@@ -51,8 +55,14 @@ class RoomClient(context: Context,
     // Android context.
     private val appContext: Context = context.applicationContext
 
-    // PeerConnection util.
-    private var peerConnectionUtils: PeerConnectionUtils? = null
+    private val componentFactory = RTCComponentFactory(mediaConstraintsOption)
+
+    private val peerConnectionFactory: PeerConnectionFactory by lazy {
+        componentFactory.createPeerConnectionFactory(context) { }
+    }
+
+    private val localAudioManager = componentFactory.createAudioManager()
+    private val localVideoManager = componentFactory.createVideoManager()
 
     // TODO(Haiyangwu):Next expected dataChannel test number.
     private val nextDataChannelTestNumber: Long = 0
@@ -72,14 +82,8 @@ class RoomClient(context: Context,
     // mediasoup Transport for receiving.
     private var recvTransport: RecvTransport? = null
 
-    // Local Audio Track for mic.
-    private var localAudioTrack: AudioTrack? = null
-
     // Local mic mediasoup Producer.
     private var micProducer: Producer? = null
-
-    // local Video Track for cam.
-    private var localVideoTrack: VideoTrack? = null
 
     // Local cam mediasoup Producer.
     private var camProducer: Producer? = null
@@ -160,7 +164,7 @@ class RoomClient(context: Context,
         Timber.d("changeCam()")
         store.setCamInProgress(true)
         workHandler.post {
-            peerConnectionUtils?.switchCam(
+            localVideoManager.switchCamera(
                 object : CameraSwitchHandler {
                     override fun onCameraSwitchDone(b: Boolean) {
                         store.setCamInProgress(false)
@@ -474,18 +478,11 @@ class RoomClient(context: Context,
             // dispose all transport and device.
             disposeTransportDevice()
 
-            // dispose audio track.
-            localAudioTrack?.setEnabled(false)
-            localAudioTrack?.dispose()
-            localAudioTrack = null
+            // dispose audio manager.
+            localAudioManager.dispose()
 
-            // dispose video track.
-            localVideoTrack?.setEnabled(false)
-            localVideoTrack?.dispose()
-            localVideoTrack = null
-
-            // dispose peerConnection.
-            peerConnectionUtils?.dispose()
+            // dispose video manager.
+            localVideoManager.dispose()
 
             // quit worker handler thread.
             workHandler.looper.quit()
@@ -663,10 +660,10 @@ class RoomClient(context: Context,
                 Timber.w("enableMic() | mSendTransport doesn't ready")
                 return
             }
-            if (localAudioTrack == null) {
-                localAudioTrack = peerConnectionUtils?.createAudioTrack(appContext, "mic")?.also {
-                    it.setEnabled(true)
-                }
+            localAudioManager.initTrack(peerConnectionFactory, mediaConstraintsOption)
+            val track = localAudioManager.track ?: run {
+                Timber.w("audio track null")
+                return
             }
             val micProducer = sendTransport.produce(
                 {
@@ -676,7 +673,7 @@ class RoomClient(context: Context,
                         micProducer = null
                     }
                 },
-                localAudioTrack,
+                track,
                 null,
                 null
             )
@@ -685,7 +682,7 @@ class RoomClient(context: Context,
         } catch (e: MediasoupException) {
             logError("enableMic() | failed:", e)
             store.addNotify("error", "Error enabling microphone: " + e.message)
-            localAudioTrack?.setEnabled(false)
+            localAudioManager.enabled = false
         }
     }
 
@@ -757,10 +754,11 @@ class RoomClient(context: Context,
                 Timber.w("enableCam() | mSendTransport doesn't ready")
                 return
             }
-            if (localVideoTrack == null) {
-                localVideoTrack = peerConnectionUtils?.createVideoTrack(appContext, "cam")?.also {
-                    it.setEnabled(true)
-                }
+            localVideoManager.initTrack(peerConnectionFactory, mediaConstraintsOption, appContext)
+            camCapturer?.startCapture(640, 480, 30)
+            val track = localVideoManager.track ?: run {
+                Timber.w("video track null")
+                return
             }
             val camProducer = sendTransport.produce(
                 {
@@ -770,7 +768,7 @@ class RoomClient(context: Context,
                         camProducer = null
                     }
                 },
-                localVideoTrack,
+                track,
                 null,
                 null
             )
@@ -779,7 +777,7 @@ class RoomClient(context: Context,
         } catch (e: MediasoupException) {
             logError("enableWebcam() | failed:", e)
             store.addNotify("error", "Error enabling webcam: " + e.message)
-            localVideoTrack?.setEnabled(false)
+            localVideoManager.enabled = false
         }
     }
 
@@ -789,6 +787,7 @@ class RoomClient(context: Context,
         val camProducer = camProducer ?: return
         this.camProducer = null
         camProducer.close()
+        camCapturer?.stopCapture()
         store.removeProducer(camProducer.id)
         try {
             protoo?.syncRequest("closeProducer") { req ->
@@ -1016,6 +1015,5 @@ class RoomClient(context: Context,
         handlerThread.start()
         workHandler = Handler(handlerThread.looper)
         mainHandler = Handler(Looper.getMainLooper())
-        workHandler.post { peerConnectionUtils = PeerConnectionUtils() }
     }
 }
