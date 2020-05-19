@@ -1,7 +1,7 @@
 package org.mediasoup.droid.lib.model
 
+import io.github.zncmn.mediasoup.Consumer
 import org.json.JSONObject
-import org.mediasoup.droid.Consumer
 import timber.log.Timber
 import java.util.*
 

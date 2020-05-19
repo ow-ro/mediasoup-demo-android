@@ -1,8 +1,8 @@
 package org.mediasoup.droid.lib
 
 import androidx.annotation.WorkerThread
+import io.github.zncmn.mediasoup.Consumer
 import org.json.JSONException
-import org.mediasoup.droid.Consumer
 import org.mediasoup.droid.lib.lv.RoomStore
 import org.protoojs.droid.Message
 import timber.log.Timber
@@ -85,6 +85,7 @@ open class RoomMessageHandler(
                 val peerId = data.getString("peerId")
                 store.setRoomActiveSpeaker(peerId)
             }
+            "downlinkBwe" -> { }
             else -> Timber.e("unknown protoo notification.method %s", notification.method)
         }
     }

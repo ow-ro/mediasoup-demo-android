@@ -1,7 +1,7 @@
 package org.mediasoup.droid.lib.model
 
+import io.github.zncmn.mediasoup.Producer
 import org.json.JSONArray
-import org.mediasoup.droid.Producer
 import java.util.concurrent.ConcurrentHashMap
 
 class Producers {

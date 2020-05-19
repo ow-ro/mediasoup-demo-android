@@ -7,7 +7,7 @@ import androidx.databinding.Observable.OnPropertyChangedCallback
 import androidx.databinding.ObservableField
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.observe
-import org.mediasoup.droid.lib.RoomClient
+import io.github.zncmn.mediasoup.model.ConnectionState
 import org.mediasoup.droid.lib.lv.RoomStore
 import org.mediasoup.droid.lib.model.Me
 import org.mediasoup.droid.lib.model.Producers.ProducersWrapper
@@ -37,7 +37,7 @@ class MeProps(application: Application, roomStore: RoomStore) :
         }
         roomStore.roomInfo.observe(lifecycleOwner) {
             faceDetection.set(it.isFaceDetection)
-            connected.set(RoomClient.ConnectionState.CONNECTED == it.connectionState)
+            connected.set(ConnectionState.CONNECTED == it.connectionState)
         }
         stateComposer.connect(lifecycleOwner, roomStore)
     }
@@ -71,8 +71,8 @@ class MeProps(application: Application, roomStore: RoomStore) :
                 val videoProducer = videoPW?.producer
                 audioProducerId.set(audioProducer?.id)
                 videoProducerId.set(videoProducer?.id)
-                audioRtpParameters.set(audioProducer?.rtpParameters)
-                videoRtpParameters.set(videoProducer?.rtpParameters)
+                audioRtpParameters.set(audioProducer?.rtpParameters.toString())
+                videoRtpParameters.set(videoProducer?.rtpParameters.toString())
                 audioTrack.set(audioProducer?.track as AudioTrack?)
                 videoTrack.set(videoProducer?.track as VideoTrack?)
                 // TODO(HaiyangWu) : support codec property

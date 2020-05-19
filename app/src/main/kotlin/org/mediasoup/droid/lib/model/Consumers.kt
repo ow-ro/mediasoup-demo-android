@@ -1,7 +1,7 @@
 package org.mediasoup.droid.lib.model
 
+import io.github.zncmn.mediasoup.Consumer
 import org.json.JSONArray
-import org.mediasoup.droid.Consumer
 import java.util.concurrent.ConcurrentHashMap
 
 class Consumers {

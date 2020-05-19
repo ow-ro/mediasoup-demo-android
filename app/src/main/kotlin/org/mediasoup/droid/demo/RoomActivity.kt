@@ -22,8 +22,6 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.github.zncmn.webrtc.camera.CameraCapturerFactory
 import io.github.zncmn.webrtc.option.MediaConstraintsOption
-import kotlinx.android.synthetic.main.activity_room.*
-import org.mediasoup.droid.MediasoupClient
 import org.mediasoup.droid.demo.adapter.PeerAdapter
 import org.mediasoup.droid.demo.databinding.ActivityRoomBinding
 import org.mediasoup.droid.demo.utils.ClipboardCopy
@@ -35,7 +33,6 @@ import org.mediasoup.droid.lib.RoomClient
 import org.mediasoup.droid.lib.RoomOptions
 import org.mediasoup.droid.lib.Utils
 import org.mediasoup.droid.lib.lv.RoomStore
-import org.webrtc.EglBase
 import permissions.dispatcher.*
 import timber.log.Timber
 
@@ -154,9 +151,6 @@ class RoomActivity : AppCompatActivity() {
 
         // Device config.
         cameraName = preferences.getString("camera", "front") ?: ""
-
-        // Display version number.
-        version.text = MediasoupClient.version().toString()
     }
 
     private fun initRoomClient() {

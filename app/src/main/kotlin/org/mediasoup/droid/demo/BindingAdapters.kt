@@ -5,8 +5,8 @@ import android.view.animation.Animation
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
+import io.github.zncmn.mediasoup.model.ConnectionState
 import org.mediasoup.droid.demo.vm.MeProps.DeviceState
-import org.mediasoup.droid.lib.RoomClient
 import org.mediasoup.droid.lib.model.DeviceInfo
 import org.webrtc.SurfaceViewRenderer
 import org.webrtc.VideoTrack
@@ -16,16 +16,16 @@ import java.util.*
 object BindingAdapters {
     @JvmStatic
     @BindingAdapter("edias_state", "edias_state_animation")
-    fun roomState(view: ImageView, state: RoomClient.ConnectionState?, animation: Animation) {
+    fun roomState(view: ImageView, state: ConnectionState?, animation: Animation) {
         if (state == null) {
             return
         }
         when (state) {
-            RoomClient.ConnectionState.CONNECTING -> {
+            ConnectionState.CONNECTING -> {
                 view.setImageResource(R.drawable.ic_state_connecting)
                 view.startAnimation(animation)
             }
-            RoomClient.ConnectionState.CONNECTED -> {
+            ConnectionState.CONNECTED -> {
                 view.setImageResource(R.drawable.ic_state_connected)
                 animation.cancel()
                 view.clearAnimation()

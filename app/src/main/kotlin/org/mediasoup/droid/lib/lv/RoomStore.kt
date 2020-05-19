@@ -2,11 +2,11 @@ package org.mediasoup.droid.lib.lv
 
 import android.text.TextUtils
 import androidx.lifecycle.MutableLiveData
+import io.github.zncmn.mediasoup.Consumer
+import io.github.zncmn.mediasoup.Producer
+import io.github.zncmn.mediasoup.model.ConnectionState
 import org.json.JSONArray
 import org.json.JSONObject
-import org.mediasoup.droid.Consumer
-import org.mediasoup.droid.Producer
-import org.mediasoup.droid.lib.RoomClient
 import org.mediasoup.droid.lib.model.*
 
 /**
@@ -47,9 +47,9 @@ class RoomStore {
         }
     }
 
-    fun setRoomState(state: RoomClient.ConnectionState) {
+    fun setRoomState(state: ConnectionState) {
         roomInfo.postValue { it.connectionState = state }
-        if (RoomClient.ConnectionState.CLOSED == state) {
+        if (ConnectionState.CLOSED == state) {
             peers.postValue { it.clear() }
             me.postValue { it.clear() }
             producers.postValue { it.clear() }
