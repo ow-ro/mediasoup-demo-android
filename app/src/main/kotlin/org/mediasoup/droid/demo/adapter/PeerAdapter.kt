@@ -16,9 +16,10 @@ import org.mediasoup.droid.lib.lv.RoomStore
 import org.mediasoup.droid.lib.model.Peer
 import timber.log.Timber
 
-class PeerAdapter(private val store: RoomStore,
-                  private val lifecycleOwner: LifecycleOwner,
-                  private val roomClient: RoomClient
+class PeerAdapter(
+    private val store: RoomStore,
+    private val lifecycleOwner: LifecycleOwner,
+    private val roomClient: RoomClient
 ) : RecyclerView.Adapter<PeerViewHolder>() {
     private var peers: List<Peer> = emptyList()
     private var containerHeight = 0

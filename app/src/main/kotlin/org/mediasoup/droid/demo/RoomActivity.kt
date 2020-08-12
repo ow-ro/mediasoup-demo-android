@@ -38,7 +38,9 @@ import timber.log.Timber
 
 @RuntimePermissions
 class RoomActivity : AppCompatActivity() {
-    private val preferences: SharedPreferences by lazy { androidx.preference.PreferenceManager.getDefaultSharedPreferences(this) }
+    private val preferences: SharedPreferences by lazy {
+        androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
+    }
 
     private var roomId: String? = null
     private var peerId: String? = null
@@ -163,10 +165,14 @@ class RoomActivity : AppCompatActivity() {
             return
         }
 
-        val camCapturer = CameraCapturerFactory.create(this,
-            fixedResolution = false,
-            preferenceFrontCamera = "front" == cameraName
-        )
+        val camCapturer = if (options.isProduce) {
+            CameraCapturerFactory.create(
+                this,
+                fixedResolution = false,
+                preferenceFrontCamera = "front" == cameraName
+            )
+        } else null
+
         roomClient = RoomClient(
             context = this,
             store = roomStore,

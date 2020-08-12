@@ -38,7 +38,7 @@ class Producers {
     }
 
     fun filter(kind: String): ProducersWrapper? {
-        return producers.values.find { kind == it.producer.track.kind() }
+        return producers.values.find { kind == it.producer.track?.kind() }
     }
 
     fun clear() {

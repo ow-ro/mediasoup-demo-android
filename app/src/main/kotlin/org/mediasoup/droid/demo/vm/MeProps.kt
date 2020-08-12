@@ -7,7 +7,7 @@ import androidx.databinding.Observable.OnPropertyChangedCallback
 import androidx.databinding.ObservableField
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.observe
-import io.github.zncmn.mediasoup.model.ConnectionState
+import org.mediasoup.droid.lib.RoomClient
 import org.mediasoup.droid.lib.lv.RoomStore
 import org.mediasoup.droid.lib.model.Me
 import org.mediasoup.droid.lib.model.Producers.ProducersWrapper
@@ -37,7 +37,7 @@ class MeProps(application: Application, roomStore: RoomStore) :
         }
         roomStore.roomInfo.observe(lifecycleOwner) {
             faceDetection.set(it.isFaceDetection)
-            connected.set(ConnectionState.CONNECTED == it.connectionState)
+            connected.set(RoomClient.ConnectionState.CONNECTED == it.connectionState)
         }
         stateComposer.connect(lifecycleOwner, roomStore)
     }
@@ -84,7 +84,7 @@ class MeProps(application: Application, roomStore: RoomStore) :
                     DeviceState.UNSUPPORTED
                 } else if (audioProducer == null) {
                     DeviceState.UNSUPPORTED
-                } else if (!audioProducer.isPaused) {
+                } else if (!audioProducer.paused) {
                     DeviceState.ON
                 } else {
                     DeviceState.OFF

@@ -6,20 +6,23 @@ import android.view.animation.AnimationUtils
 import androidx.databinding.ObservableField
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.observe
-import io.github.zncmn.mediasoup.model.ConnectionState
 import org.mediasoup.droid.demo.R
+import org.mediasoup.droid.lib.RoomClient
 import org.mediasoup.droid.lib.lv.RoomStore
 import org.mediasoup.droid.lib.model.RoomInfo
 
-class RoomProps(application: Application, roomStore: RoomStore) : EdiasProps(application, roomStore) {
-    val connectingAnimation: Animation = AnimationUtils.loadAnimation(getApplication(), R.anim.ani_connecting)
+class RoomProps(application: Application, roomStore: RoomStore) :
+    EdiasProps(application, roomStore) {
+    val connectingAnimation: Animation =
+        AnimationUtils.loadAnimation(getApplication(), R.anim.ani_connecting)
     val invitationLink = ObservableField<String>()
-    val connectionState = ObservableField<ConnectionState>()
+    val connectionState = ObservableField<RoomClient.ConnectionState>()
     val audioOnly = ObservableField(false)
     val audioOnlyInProgress = ObservableField(false)
     val audioMuted = ObservableField(false)
     val restartIceInProgress = ObservableField(false)
-    val restartIceAnimation: Animation = AnimationUtils.loadAnimation(getApplication(), R.anim.ani_restart_ice)
+    val restartIceAnimation: Animation =
+        AnimationUtils.loadAnimation(getApplication(), R.anim.ani_restart_ice)
 
     private fun receiveState(roomInfo: RoomInfo) {
         connectionState.set(roomInfo.connectionState)

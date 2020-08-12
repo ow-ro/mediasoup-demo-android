@@ -4,9 +4,9 @@ import android.text.TextUtils
 import androidx.lifecycle.MutableLiveData
 import io.github.zncmn.mediasoup.Consumer
 import io.github.zncmn.mediasoup.Producer
-import io.github.zncmn.mediasoup.model.ConnectionState
 import org.json.JSONArray
 import org.json.JSONObject
+import org.mediasoup.droid.lib.RoomClient
 import org.mediasoup.droid.lib.model.*
 
 /**
@@ -47,9 +47,9 @@ class RoomStore {
         }
     }
 
-    fun setRoomState(state: ConnectionState) {
+    fun setRoomState(state: RoomClient.ConnectionState) {
         roomInfo.postValue { it.connectionState = state }
-        if (ConnectionState.CLOSED == state) {
+        if (RoomClient.ConnectionState.CLOSED == state) {
             peers.postValue { it.clear() }
             me.postValue { it.clear() }
             producers.postValue { it.clear() }
@@ -69,9 +69,10 @@ class RoomStore {
         roomInfo.postValue { it.isFaceDetection = enable }
     }
 
-    fun setMe(peerId: String,
-              displayName: String,
-              device: DeviceInfo
+    fun setMe(
+        peerId: String,
+        displayName: String,
+        device: DeviceInfo
     ) {
         me.postValue {
             it.id = peerId

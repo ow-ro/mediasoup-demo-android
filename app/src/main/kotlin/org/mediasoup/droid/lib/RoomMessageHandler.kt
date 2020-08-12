@@ -2,6 +2,7 @@ package org.mediasoup.droid.lib
 
 import androidx.annotation.WorkerThread
 import io.github.zncmn.mediasoup.Consumer
+import io.github.zncmn.mediasoup.DataConsumer
 import org.json.JSONException
 import org.mediasoup.droid.lib.lv.RoomStore
 import org.protoojs.droid.Message
@@ -15,7 +16,11 @@ open class RoomMessageHandler(
     // mediasoup Consumers.
     internal val consumers = ConcurrentHashMap<String, ConsumerHolder>()
 
+    // mediasoup DataConsumers.
+    internal val dataConsumers = ConcurrentHashMap<String, DataConsumerHolder>()
+
     internal class ConsumerHolder(val peerId: String, val consumer: Consumer)
+    internal class DataConsumerHolder(val peerId: String, val dataConsumer: DataConsumer)
 
     @WorkerThread
     @Throws(JSONException::class)
@@ -49,7 +54,6 @@ open class RoomMessageHandler(
                 val consumerId = data.getString("consumerId")
                 consumers.remove(consumerId)?.also {
                     it.consumer.close()
-                    consumers.remove(consumerId)
                     store.removeConsumer(it.peerId, it.consumer.id)
                 }
             }
@@ -80,12 +84,19 @@ open class RoomMessageHandler(
                     store.setConsumerScore(consumerId, score)
                 }
             }
-            "dataConsumerClosed" -> { }
+            "dataConsumerClosed" -> {
+                val dataConsumerId = data.getString("dataConsumerId")
+                dataConsumers.remove(dataConsumerId)?.also {
+                    it.dataConsumer.close()
+                    store.removeDataConsumer(it.peerId, it.dataConsumer.id)
+                }
+            }
             "activeSpeaker" -> {
                 val peerId = data.getString("peerId")
                 store.setRoomActiveSpeaker(peerId)
             }
-            "downlinkBwe" -> { }
+            "downlinkBwe" -> {
+            }
             else -> Timber.e("unknown protoo notification.method %s", notification.method)
         }
     }

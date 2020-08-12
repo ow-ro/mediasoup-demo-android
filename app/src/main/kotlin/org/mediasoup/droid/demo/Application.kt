@@ -1,9 +1,10 @@
 package org.mediasoup.droid.demo
 
 import android.app.Application
-import io.github.zncmn.webrtc.initializePeerConnectionFactory
+import io.github.zncmn.mediasoup.Logger
+import io.github.zncmn.mediasoup.MediasoupClient
 import io.github.zncmn.webrtc.log.LogHandler
-import io.github.zncmn.webrtc.log.WebRtcLogger
+import org.webrtc.Logging
 import timber.log.Timber
 import timber.log.Timber.DebugTree
 
@@ -13,15 +14,26 @@ class Application : Application() {
 
         Timber.plant(DebugTree())
 
-        WebRtcLogger.setHandler(object : LogHandler {
-            override fun log(priority: Int, tag: String?, t: Throwable?, message: String?, vararg args: Any?) {
-                tag?.also {
-                    Timber.tag(it)
+        MediasoupClient.initialize(
+            context = this,
+            logHandler = object : LogHandler {
+                override fun log(
+                    priority: Int,
+                    tag: String?,
+                    t: Throwable?,
+                    message: String?,
+                    vararg args: Any?
+                ) {
+                    tag?.also {
+                        Timber.tag(it)
+                    }
+                    Timber.log(priority, t, message, *args)
                 }
-                Timber.log(priority, t, message, *args)
-            }
-        })
+            },
+            libwebrtcLoggingSeverity = Logging.Severity.LS_INFO
+        )
 
-        initializePeerConnectionFactory()
+        Logger.setLogLevel(Logger.LogLevel.LOG_DEBUG)
+        Logger.setDefaultHandler()
     }
 }

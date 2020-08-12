@@ -3,6 +3,7 @@ package org.mediasoup.droid.lib.model
 import android.os.Build
 import org.json.JSONObject
 import org.mediasoup.droid.lib.JsonUtils
+import org.webrtc.WebRtcVersion
 
 class DeviceInfo(
     var flag: String,
@@ -22,12 +23,14 @@ class DeviceInfo(
         fun androidDevice() = DeviceInfo(
             flag = "android",
             name = "Android " + Build.DEVICE,
-            version = Build.VERSION.CODENAME)
+            version = WebRtcVersion.VERSION
+        )
 
         @JvmStatic
         fun unknownDevice() = DeviceInfo(
             flag = "unknown",
             name = "unknown",
-            version = "unknown")
+            version = "unknown"
+        )
     }
 }
