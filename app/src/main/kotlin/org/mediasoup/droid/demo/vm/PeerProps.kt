@@ -59,7 +59,7 @@ class PeerProps(application: Application, roomStore: RoomStore) : PeerViewProps(
             val peer = peer ?: return null
             val consumers = consumers ?: return null
 
-            peer.getConsumers().forEach { consumerId ->
+            peer.consumers.forEach { consumerId ->
                 val wp = consumers.getConsumer(consumerId)
                 if (kind == wp?.consumer?.kind) {
                     return wp

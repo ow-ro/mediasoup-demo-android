@@ -38,7 +38,7 @@ class RoomClient(
     forceH264: Boolean = false,
     forceVP9: Boolean = false,
     private val camCapturer: VideoCapturer?,
-    private val options: RoomOptions = RoomOptions(),
+    private val options: RoomOptions,
     private val mediaConstraintsOption: MediaConstraintsOption
 ) : RoomMessageHandler(store) {
     enum class ConnectionState {
@@ -584,24 +584,28 @@ class RoomClient(
             val device = mediasoupDevice
             protoo?.syncRequest("getRouterRtpCapabilities")?.also {
                 Timber.d("getRouterRtpCapabilities() $it")
-                device.load(it)
+                if (!device.loaded) {
+                    device.load(it)
+                }
             }
-            val rtpCapabilities: JSONObject?
-            val sctpCapabilities: JSONObject?
+            val rtpCapabilities = if (options.isConsume) {
+                JsonUtils.toJsonObject(device.rtpCapabilities)
+            } else null
+            val sctpCapabilitiesForProducer = if (options.isUseDataChannel) {
+                JsonUtils.toJsonObject(device.sctpCapabilities)
+            } else null
+            val sctpCapabilitiesForConsume = if (options.isUseDataChannel && options.isConsume) {
+                sctpCapabilitiesForProducer
+            } else null
 
             // Create mediasoup Transport for sending (unless we don't want to produce).
             if (options.isProduce) {
-                createSendTransport()
+                createSendTransport(sctpCapabilitiesForProducer)
             }
 
             // Create mediasoup Transport for sending (unless we don't want to consume).
             if (options.isConsume) {
-                createRecvTransport()
-                rtpCapabilities = JsonUtils.toJsonObject(device.rtpCapabilities)
-                sctpCapabilities = JsonUtils.toJsonObject(device.sctpCapabilities)
-            } else {
-                rtpCapabilities = null
-                sctpCapabilities = null
+                createRecvTransport(sctpCapabilitiesForConsume)
             }
 
             // Join now into the room.
@@ -609,7 +613,7 @@ class RoomClient(
                 JsonUtils.jsonPut(req, "displayName", displayName)
                 JsonUtils.jsonPut(req, "device", options.device.toJSONObject())
                 JsonUtils.jsonPut(req, "rtpCapabilities", rtpCapabilities)
-                JsonUtils.jsonPut(req, "sctpCapabilities", sctpCapabilities)
+                JsonUtils.jsonPut(req, "sctpCapabilities", sctpCapabilitiesForConsume)
             } ?: return
             store.setRoomState(ConnectionState.CONNECTED)
             store.addNotify("You are in the room!", 3000)
@@ -807,13 +811,13 @@ class RoomClient(
 
     @WorkerThread
     @Throws(ProtooException::class, JSONException::class, MediasoupException::class)
-    private fun createSendTransport() {
+    private fun createSendTransport(sctpCapabilities: JSONObject? = null) {
         Timber.d("createSendTransport()")
         val info = protoo?.syncRequest("createWebRtcTransport") { req ->
             JsonUtils.jsonPut(req, "forceTcp", options.isForceTcp)
             JsonUtils.jsonPut(req, "producing", true)
             JsonUtils.jsonPut(req, "consuming", false)
-            JsonUtils.jsonPut(req, "sctpCapabilities", JSONObject())
+            JsonUtils.jsonPut(req, "sctpCapabilities", sctpCapabilities)
         }?.let {
             JSONObject(it)
         } ?: run {
@@ -842,14 +846,13 @@ class RoomClient(
 
     @WorkerThread
     @Throws(ProtooException::class, JSONException::class, MediasoupException::class)
-    private fun createRecvTransport() {
+    private fun createRecvTransport(sctpCapabilities: JSONObject? = null) {
         Timber.d("createRecvTransport()")
         val info = protoo?.syncRequest("createWebRtcTransport") { req ->
             JsonUtils.jsonPut(req, "forceTcp", options.isForceTcp)
             JsonUtils.jsonPut(req, "producing", false)
             JsonUtils.jsonPut(req, "consuming", true)
-            // TODO (HaiyangWu): add sctpCapabilities
-            JsonUtils.jsonPut(req, "sctpCapabilities", JSONObject())
+            JsonUtils.jsonPut(req, "sctpCapabilities", sctpCapabilities)
         }?.let {
             JSONObject(it)
         } ?: run {
@@ -899,11 +902,7 @@ class RoomClient(
             Timber.tag(listenerTAG).d("onProduceData() ")
             val dataProducerId = fetchDataProduceId { req ->
                 JsonUtils.jsonPut(req, "transportId", transport.id)
-                JsonUtils.jsonPut(
-                    req,
-                    "sctpStreamParameters",
-                    JsonUtils.toJsonObject(sctpStreamParameters)
-                )
+                JsonUtils.jsonPut(req, "sctpStreamParameters", JsonUtils.toJsonObject(sctpStreamParameters))
                 JsonUtils.jsonPut(req, "label", label)
                 JsonUtils.jsonPut(req, "protocol", protocol)
                 JsonUtils.jsonPut(req, "appData", appData)
@@ -919,20 +918,13 @@ class RoomClient(
             Timber.tag(listenerTAG).d("onConnect()")
             protoo?.request("connectWebRtcTransport") { req: JSONObject ->
                 JsonUtils.jsonPut(req, "transportId", transport.id)
-                JsonUtils.jsonPut(
-                    req,
-                    "dtlsParameters",
-                    JSONObject(dtlsParameters)
-                ) // moshi.adapter(DtlsParameters::class.java).toJson(dtlsParameters)))
+                JsonUtils.jsonPut(req, "dtlsParameters", JSONObject(dtlsParameters))
             }?.subscribeBy(
                 onNext = { d: String? ->
                     Timber.tag(listenerTAG).d("connectWebRtcTransport res: %s", d)
                 },
                 onError = { t: Throwable ->
-                    logError(
-                        "connectWebRtcTransport for mSendTransport failed",
-                        t
-                    )
+                    logError("connectWebRtcTransport for mSendTransport failed", t)
                 }
             )?.addTo(compositeDisposable)
         }
@@ -951,20 +943,13 @@ class RoomClient(
             Timber.tag(listenerTAG).d("onConnect()")
             protoo?.request("connectWebRtcTransport") { req ->
                 JsonUtils.jsonPut(req, "transportId", transport.id)
-                JsonUtils.jsonPut(
-                    req,
-                    "dtlsParameters",
-                    JSONObject(dtlsParameters)
-                ) // moshi.adapter(DtlsParameters::class.java).toJson(dtlsParameters)))
+                JsonUtils.jsonPut(req, "dtlsParameters", JSONObject(dtlsParameters))
             }?.subscribeBy(
                 onNext = { d: String? ->
                     Timber.tag(listenerTAG).d("connectWebRtcTransport res: %s", d)
                 },
                 onError = { t: Throwable ->
-                    logError(
-                        "connectWebRtcTransport for mRecvTransport failed",
-                        t
-                    )
+                    logError("connectWebRtcTransport for mRecvTransport failed", t)
                 }
             )?.addTo(compositeDisposable)
         }
@@ -1060,6 +1045,12 @@ class RoomClient(
             handler.reject(403, "I do not want to dataConsume")
             return
         }
+        if (!options.isUseDataChannel)
+        {
+            handler.reject(403, "I do not want to DataChannels")
+            return
+        }
+
         try {
             val data = request.data
             val peerId = data.optString("peerId")
@@ -1080,9 +1071,21 @@ class RoomClient(
                     }
 
                     override fun onMessage(dataConsumer: DataConsumer, buffer: DataChannel.Buffer) {
+                        val sctpStreamParameters = JsonUtils.toJsonObject(dataConsumer.sctpStreamParameters)
+                        Timber.i("onMessage for dataConsume: [dataConsumerId:%s, streamId:%s]", dataConsumer.id, sctpStreamParameters.optString("streamId"))
+                        val sendingPeer = store.peers.value?.allPeers?.firstOrNull { peer ->
+                            peer.dataConsumers.contains(dataConsumer.id)
+                        } ?: run {
+                            Timber.i("DataConsumer \"message\" from unknown peer")
+                            return
+                        }
+
                         val byteArray = ByteArray(buffer.data.remaining())
                         buffer.data.get(byteArray)
-                        Timber.i("onMessage for dataConsume: ${String(byteArray)}")
+                        val message = "${sendingPeer.displayName}: ${String(byteArray)}"
+
+                        Timber.i("onMessage for dataConsume: %s", message)
+                        store.addNotify(message)
                     }
 
                     override fun onClosing(dataConsumer: DataConsumer) {
@@ -1108,6 +1111,7 @@ class RoomClient(
             ) ?: return
 
             dataConsumers[dataConsumer.id] = DataConsumerHolder(peerId, dataConsumer)
+            store.addDataConsumer(peerId, dataConsumer)
 
             // We are ready. Answer the protoo request so the server will
             // resume this DataConsumer (which was paused for now if video).

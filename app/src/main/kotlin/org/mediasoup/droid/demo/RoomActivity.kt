@@ -150,6 +150,7 @@ class RoomActivity : AppCompatActivity() {
         options.isProduce = preferences.getBoolean("produce", true)
         options.isConsume = preferences.getBoolean("consume", true)
         options.isForceTcp = preferences.getBoolean("forceTcp", false)
+        options.isUseDataChannel = preferences.getBoolean("useDataChannel", true)
 
         // Device config.
         cameraName = preferences.getString("camera", "front") ?: ""

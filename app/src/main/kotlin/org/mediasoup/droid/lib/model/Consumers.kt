@@ -19,6 +19,7 @@ class Consumers {
     }
 
     private val consumers = ConcurrentHashMap<String, ConsumerWrapper>()
+
     fun addConsumer(type: String, consumer: Consumer, remotelyPaused: Boolean) {
         consumers[consumer.id] = ConsumerWrapper(type, remotelyPaused, consumer)
     }

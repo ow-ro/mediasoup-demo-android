@@ -3,6 +3,8 @@ package org.mediasoup.droid.lib.lv
 import android.text.TextUtils
 import androidx.lifecycle.MutableLiveData
 import io.github.zncmn.mediasoup.Consumer
+import io.github.zncmn.mediasoup.DataConsumer
+import io.github.zncmn.mediasoup.DataProducer
 import io.github.zncmn.mediasoup.Producer
 import org.json.JSONArray
 import org.json.JSONObject
@@ -29,6 +31,10 @@ class RoomStore {
     // mediasoup-demo/app/lib/redux/reducers/producers.js
     val producers = SupplierMutableLiveData { Producers() }
 
+    // dataProducers
+    // mediasoup-demo/app/lib/redux/reducers/dataProducers.js
+    val dataProducers = SupplierMutableLiveData { DataProducers() }
+
     // peers
     // mediasoup-demo/app/lib/redux/reducers/peer.js
     val peers = SupplierMutableLiveData { Peers() }
@@ -36,6 +42,10 @@ class RoomStore {
     // consumers
     // mediasoup-demo/app/lib/redux/reducers/consumers.js
     val consumers = SupplierMutableLiveData { Consumers() }
+
+    // dataConsumers
+    // mediasoup-demo/app/lib/redux/reducers/dataConsumers.js
+    val dataConsumers = SupplierMutableLiveData { DataConsumers() }
 
     // notify
     // mediasoup-demo/app/lib/redux/reducers/notifications.js
@@ -136,12 +146,12 @@ class RoomStore {
         producers.postValue { it.setProducerScore(producerId, score) }
     }
 
-    fun addDataProducer(dataProducer: Any?) {
-        // TODO(HaiyangWU): support data consumer. Note, new DataConsumer.java
+    fun addDataProducer(dataProducer: DataProducer) {
+        dataProducers.postValue { it.addDataProducer(dataProducer) }
     }
 
-    fun removeDataProducer(dataProducerId: String?) {
-        // TODO(HaiyangWU): support data consumer.
+    fun removeDataProducer(dataProducerId: String) {
+        dataProducers.postValue { it.removeDataProducer(dataProducerId) }
     }
 
     fun addPeer(peerId: String, peerInfo: JSONObject) {
@@ -190,12 +200,14 @@ class RoomStore {
         consumers.postValue { it.setConsumerScore(consumerId, score) }
     }
 
-    fun addDataConsumer(peerId: String?, dataConsumer: Any?) {
-        // TODO(HaiyangWU): support data consumer. Note, new DataConsumer.java
+    fun addDataConsumer(peerId: String, dataConsumer: DataConsumer) {
+        dataConsumers.postValue { it.addDataConsumer(dataConsumer) }
+        peers.postValue { it.addDataConsumer(peerId, dataConsumer) }
     }
 
-    fun removeDataConsumer(peerId: String?, dataConsumerId: String?) {
-        // TODO(HaiyangWU): support data consumer.
+    fun removeDataConsumer(peerId: String, dataConsumerId: String) {
+        dataConsumers.postValue { it.removeDataConsumer(dataConsumerId) }
+        peers.postValue { it.removeDataConsumer(peerId, dataConsumerId) }
     }
 
     fun addNotify(text: String?) {

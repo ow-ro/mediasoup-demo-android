@@ -14,6 +14,5 @@ class Peer(info: JSONObject) : Info() {
     } ?: DeviceInfo.unknownDevice()
 
     internal val consumers = hashSetOf<String>()
-
-    fun getConsumers() = consumers.toSet()
+    internal val dataConsumers = hashSetOf<String>()
 }

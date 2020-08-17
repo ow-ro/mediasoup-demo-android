@@ -1,6 +1,7 @@
 package org.mediasoup.droid.lib.model
 
 import io.github.zncmn.mediasoup.Consumer
+import io.github.zncmn.mediasoup.DataConsumer
 import org.json.JSONObject
 import timber.log.Timber
 import java.util.*
@@ -32,9 +33,22 @@ class Peers {
         peer.consumers.add(consumer.id)
     }
 
-    fun removeConsumer(peerId: String, consumerId: String?) {
+    fun removeConsumer(peerId: String, consumerId: String) {
         val peer = getPeer(peerId) ?: return
         peer.consumers.remove(consumerId)
+    }
+
+    fun addDataConsumer(peerId: String, dataConsumer: DataConsumer) {
+        val peer = getPeer(peerId) ?: run {
+            Timber.e("no Peer found for new DataConsumer")
+            return
+        }
+        peer.dataConsumers.add(dataConsumer.id)
+    }
+
+    fun removeDataConsumer(peerId: String, dataConsumerId: String) {
+        val peer = getPeer(peerId) ?: return
+        peer.dataConsumers.remove(dataConsumerId)
     }
 
     fun getPeer(peerId: String): Peer? {
