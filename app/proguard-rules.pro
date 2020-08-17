@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-dontwarn androidx.databinding.**
+-keep class androidx.databinding.** { *; }
+-keep class * extends androidx.databinding.DataBinderMapper
+-keep class * extends androidx.lifecycle.AndroidViewModel {
+    <init>(android.app.Application, org.mediasoup.droid.lib.lv.RoomStore);
+}

@@ -24,8 +24,12 @@ android {
         }
     }
     buildTypes {
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -78,7 +82,7 @@ dependencies {
     kapt 'org.permissionsdispatcher:permissionsdispatcher-processor:4.7.0'
 
     implementation 'org.protoojs.droid:protoo-client:4.0.3'
-    implementation 'io.github.zncmn.mediasoup:libmediasoup-android:0.1.0'
+    implementation 'io.github.zncmn.mediasoup:libmediasoup-android:0.1.1'
 
     implementation 'com.squareup.okhttp3:okhttp:4.8.1'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.8.1'
