@@ -749,7 +749,6 @@ class RoomClient(
             return
         }
         try {
-            val mediasoupDevice = mediasoupDevice ?: return
             if (!mediasoupDevice.loaded) {
                 Timber.w("enableCam() | not loaded")
                 return
