@@ -16,5 +16,5 @@ class RoomOptions(
     var isConsume: Boolean = true,
 
     // Whether we want DataChannels.
-    var isUseDataChannel: Boolean = false
+    var isUseDataChannel: Boolean = true
 )

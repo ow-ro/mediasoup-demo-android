@@ -11,6 +11,7 @@ import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -229,6 +230,9 @@ class RoomActivity : AppCompatActivity() {
                     roomClient?.muteAudio()
                 }
             }
+        }
+        binding.button.setOnClickListener {
+            roomClient?.sendChatMessage("test chat message")
         }
         binding.restartIce.setOnClickListener { client.restartIce() }
 

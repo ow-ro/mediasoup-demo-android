@@ -5,11 +5,16 @@ import android.os.HandlerThread
 import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
 import okio.ByteString
+import org.apache.http.conn.ssl.SSLSocketFactory
 import org.json.JSONObject
 import org.protoojs.droid.Message
 import org.protoojs.droid.transports.AbsWebSocketTransport
 import timber.log.Timber
+import java.security.SecureRandom
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
 import java.util.concurrent.CountDownLatch
+import javax.net.ssl.*
 import kotlin.math.pow
 
 class WebSocketTransport(url: String?) : AbsWebSocketTransport(url) {
@@ -133,6 +138,54 @@ class WebSocketTransport(url: String?) : AbsWebSocketTransport(url) {
         return closed
     }
 
+    private fun getUnsafeOkHttpClient(): OkHttpClient {
+        return try {
+            val trustAllCerts = arrayOf<TrustManager>(
+                object : X509TrustManager {
+                    @Throws(CertificateException::class)
+                    override fun checkClientTrusted(
+                        chain: Array<X509Certificate>, authType: String
+                    ) {
+                    }
+
+                    @Throws(CertificateException::class)
+                    override fun checkServerTrusted(
+                        chain: Array<X509Certificate>, authType: String
+                    ) {
+                    }
+
+                    // Called reflectively by X509TrustManagerExtensions.
+                    fun checkServerTrusted(
+                        chain: Array<X509Certificate?>?, authType: String?, host: String?
+                    ) {
+                    }
+
+                    override fun getAcceptedIssuers(): Array<X509Certificate> {
+                        return arrayOf()
+                    }
+                }
+            )
+            val sslContext = SSLContext.getInstance(SSLSocketFactory.SSL)
+            sslContext.init(null, trustAllCerts, SecureRandom())
+            val sslSocketFactory = sslContext.socketFactory
+            val httpLoggingInterceptor =
+                HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
+                    override fun log(message: String) {
+                        Timber.i(message)
+                    }
+                })
+            httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC)
+            val builder = OkHttpClient.Builder()
+                .addInterceptor(httpLoggingInterceptor)
+                .retryOnConnectionFailure(true)
+            builder.sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
+            builder.hostnameVerifier { _: String?, _: SSLSession? -> true }
+            builder.build()
+        } catch (e: Exception) {
+            throw RuntimeException(e)
+        }
+    }
+
     private inner class ProtooWebSocketListener : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
             if (closed) {
@@ -194,15 +247,7 @@ class WebSocketTransport(url: String?) : AbsWebSocketTransport(url) {
     }
 
     init {
-        val logging = HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
-            override fun log(message: String) {
-                Timber.i(message)
-            }
-        })
-        okHttpClient = OkHttpClient.Builder().let {
-            it.addInterceptor(logging)
-            it.build()
-        }
+        okHttpClient = getUnsafeOkHttpClient()
         val handlerThread = HandlerThread("socket")
         handlerThread.start()
         handler = Handler(handlerThread.looper)
